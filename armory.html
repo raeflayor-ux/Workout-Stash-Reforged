@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>The Workout Stash Reforged — Movement Encyclopedia</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700&family=DM+Serif+Display&display=swap');
+  :root {
+    --navy: #1B2A4A; --navy-deep: #111D35; --navy-surface: #1E3054;
+    --steel: #3D5A80; --steel-light: #4A6D99;
+    --accent: #E07A5F; --accent-glow: #E07A5F22;
+    --warm: #F4A261; --green: #4CAF50; --green-dim: #2E7D3233;
+    --text: #E8ECF1; --text-dim: #8B9DB8; --text-muted: #5A6F88;
+    --surface: #172238; --card: #1C2D48; --border: #2A3F5F;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body {
+    font-family:'DM Sans',-apple-system,sans-serif; background:var(--navy-deep);
+    color:var(--text); min-height:100vh; -webkit-font-smoothing:antialiased;
+    padding-bottom:env(safe-area-inset-bottom,20px);
+  }
+  .header {
+    background:linear-gradient(135deg,var(--navy) 0%,var(--navy-deep) 100%);
+    padding:20px 20px 16px; text-align:center;
+    border-bottom:2px solid var(--steel); position:sticky; top:0; z-index:10;
+  }
+  .header h1 {
+    font-family:'DM Serif Display',Georgia,serif; font-size:22px; font-weight:400;
+    letter-spacing:3px; text-transform:uppercase; color:var(--text); margin-bottom:4px;
+  }
+  .header-meta {
+    display:flex; justify-content:center; gap:16px; margin-top:8px;
+    flex-wrap:wrap;
+  }
+  .header-chip {
+    font-size:11px; color:var(--text-dim); background:var(--navy-surface);
+    border:1px solid var(--border); border-radius:6px; padding:3px 10px;
+    letter-spacing:0.5px;
+  }
+  .header-chip strong { color:var(--text); font-weight:600; }
+  .header-chip .accent { color:var(--accent); font-weight:600; }
+  .content { padding:12px; }
+
+  /* DAY TYPE CARDS */
+  .day-type {
+    background:var(--card); border:1px solid var(--border);
+    border-radius:12px; margin-bottom:10px; overflow:hidden;
+    transition:box-shadow 0.3s ease;
+  }
+  .day-type.open { box-shadow:0 4px 24px rgba(0,0,0,0.3); }
+  .day-type.open .dt-header { border-bottom:1px solid var(--border); }
+
+  .dt-header {
+    display:flex; align-items:center; padding:14px 16px;
+    cursor:pointer; user-select:none; gap:12px;
+  }
+  .dt-header:active { opacity:0.8; }
+
+  .dt-letter {
+    width:40px; height:40px; border-radius:10px;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'DM Serif Display',Georgia,serif;
+    font-size:20px; font-weight:400; flex-shrink:0;
+    background:var(--navy-surface); border:1px solid var(--steel);
+    color:var(--steel-light);
+  }
+  .day-type.open .dt-letter { background:var(--accent); border-color:var(--accent); color:white; }
+
+  .dt-info { flex:1; }
+  .dt-name { font-size:15px; font-weight:700; color:var(--text); line-height:1.2; }
+  .dt-patterns { font-size:11px; color:var(--text-dim); margin-top:2px; }
+  .dt-count {
+    font-size:10px; color:var(--text-muted); background:var(--surface);
+    padding:2px 8px; border-radius:4px; flex-shrink:0;
+  }
+  .day-type.open .dt-count { background:var(--accent-glow); color:var(--accent); }
+
+  .chevron {
+    width:20px; height:20px; flex-shrink:0;
+    transition:transform 0.3s ease; color:var(--text-muted);
+  }
+  .day-type.open .chevron { transform:rotate(180deg); }
+
+  .dt-body { max-height:0; overflow:hidden; transition:max-height 0.5s ease; }
+  .day-type.open .dt-body { max-height:8000px; }
+  .dt-inner { padding:0 16px 16px; }
+
+  /* MINIMUM VIABLE */
+  .mvs {
+    background:var(--surface); border-radius:8px; padding:12px 14px;
+    margin:10px 0; border-left:3px solid var(--warm);
+  }
+  .mvs-label { font-size:10px; text-transform:uppercase; letter-spacing:2px; color:var(--warm); font-weight:700; margin-bottom:6px; }
+  .mvs-content { font-size:13px; color:var(--text-dim); line-height:1.6; }
+  .mvs-content strong { color:var(--text); font-weight:500; }
+
+  /* WORKOUT CARDS */
+  .wk-card {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:10px; margin-top:12px; overflow:hidden;
+  }
+  .wk-header {
+    display:flex; align-items:center; padding:12px 14px;
+    cursor:pointer; user-select:none; gap:10px;
+    border-bottom:1px solid transparent;
+  }
+  .wk-card.open .wk-header { border-bottom-color:var(--border); }
+  .wk-header:active { opacity:0.8; }
+
+  .wk-badge {
+    font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:1px;
+    padding:2px 6px; border-radius:3px; flex-shrink:0;
+  }
+  .wk-badge.primary { background:var(--accent); color:white; }
+  .wk-badge.secondary { background:var(--steel); color:var(--text-dim); }
+
+  .wk-info { flex:1; }
+  .wk-name { font-size:14px; font-weight:700; color:var(--text); line-height:1.2; }
+  .wk-meta { font-size:11px; color:var(--text-dim); margin-top:2px; }
+
+  .wk-chevron {
+    width:16px; height:16px; flex-shrink:0;
+    transition:transform 0.3s ease; color:var(--text-muted);
+  }
+  .wk-card.open .wk-chevron { transform:rotate(180deg); }
+
+  .wk-body { max-height:0; overflow:hidden; transition:max-height 0.4s ease; }
+  .wk-card.open .wk-body { max-height:4000px; }
+  .wk-inner { padding:12px 14px; }
+
+  /* PHASE BLOCKS */
+  .phase {
+    margin-bottom:10px;
+  }
+  .phase-label {
+    font-size:10px; text-transform:uppercase; letter-spacing:2px; font-weight:700;
+    margin-bottom:6px; padding-bottom:4px; border-bottom:1px solid var(--border);
+  }
+  .phase-label.warmup { color:var(--warm); }
+  .phase-label.work { color:var(--accent); }
+  .phase-label.finisher { color:var(--green); }
+  .phase-label.cooldown { color:var(--steel-light); }
+
+  .phase-item {
+    font-size:13px; color:var(--text-dim); line-height:1.7; padding-left:8px;
+  }
+  .phase-item .reforge { color:var(--warm); }
+  .phase-item strong { color:var(--text); font-weight:500; }
+
+  .coverage-tag {
+    display:inline-block; font-size:10px; background:var(--navy-surface);
+    border:1px solid var(--border); border-radius:4px; padding:1px 6px;
+    color:var(--text-dim); margin-left:6px;
+  }
+  .gap-tag {
+    display:inline-block; font-size:10px; background:var(--accent-glow);
+    border:1px solid var(--accent); border-radius:4px; padding:1px 6px;
+    color:var(--accent); margin-left:4px;
+  }
+
+  .footer {
+    text-align:center; padding:20px; border-top:1px solid var(--border); margin-top:4px;
+  }
+  .footer .quote {
+    font-family:'DM Serif Display',Georgia,serif;
+    font-size:14px; color:var(--steel-light); font-style:italic;
+  }
+  .footer .project { font-size:10px; color:var(--text-muted); margin-top:8px; letter-spacing:1px; text-transform:uppercase; }
+/* ═══ THE LIBRARY ═══ */
+.library-divider { margin:3rem 0 2rem; border:none; border-top:1px solid #3D5A80; position:relative; }
+.library-divider::after { content:''; position:absolute; top:-1px; left:0; width:60px; height:2px; background:#3D5A80; }
+.library-header { text-align:center; margin:2rem 0 0.5rem; }
+.library-title { font-size:1.4rem; font-weight:700; color:#8BA7C8; letter-spacing:0.15em; }
+.library-sub { font-size:0.75rem; color:#667; margin-top:0.25rem; letter-spacing:0.05em; }
+
+.lib-card { background:#161E2A; border:1px solid #253248; border-radius:10px; margin-bottom:0.75rem; overflow:hidden; }
+.lib-header { display:flex; align-items:center; padding:1rem; cursor:pointer; gap:0.75rem; }
+.lib-header:hover { background:#1C2636; }
+.lib-icon { width:36px; height:36px; border-radius:8px; background:#1E2D42; display:flex; align-items:center; justify-content:center; font-size:1.1rem; flex-shrink:0; }
+.lib-info { flex:1; }
+.lib-name { font-weight:700; color:#C8D8E8; font-size:0.95rem; }
+.lib-desc { font-size:0.7rem; color:#667; margin-top:2px; }
+.lib-header .chevron { color:#556; }
+.lib-card.open .lib-header .chevron { transform:rotate(180deg); }
+.lib-body { max-height:0; overflow:hidden; transition:max-height 0.4s ease; }
+.lib-card.open .lib-body { max-height:none; }
+.lib-inner { padding:0 1rem 1.25rem; }
+
+/* Library content styling */
+.lib-section { margin-bottom:1.5rem; }
+.lib-section:last-child { margin-bottom:0; }
+.lib-h2 { font-size:0.85rem; font-weight:700; color:#8BA7C8; margin:1.25rem 0 0.5rem; padding-bottom:4px; border-bottom:1px solid #253248; }
+.lib-h3 { font-size:0.8rem; font-weight:700; color:#7A9BBD; margin:1rem 0 0.35rem; }
+.lib-label { font-size:0.7rem; font-weight:700; color:#6A8DAD; margin:0.6rem 0 0.2rem; text-transform:uppercase; letter-spacing:0.04em; }
+.lib-p { font-size:0.78rem; color:#99A; line-height:1.55; margin:0.3rem 0; }
+.lib-p strong { color:#C8D8E8; }
+.lib-quote { font-size:0.78rem; color:#7A9BBD; font-style:italic; margin:0.5rem 0; padding-left:0.75rem; border-left:2px solid #3D5A80; line-height:1.5; }
+.lib-em { font-size:0.78rem; color:#8BA7C8; font-style:italic; margin:0.5rem 0; }
+
+/* Library tables */
+.lib-table { width:100%; border-collapse:collapse; font-size:0.7rem; margin:0.5rem 0; }
+.lib-table th { background:#1E2D42; color:#8BA7C8; padding:6px 8px; text-align:left; font-weight:600; border:1px solid #253248; }
+.lib-table td { padding:5px 8px; border:1px solid #253248; color:#99A; }
+.lib-table tr:nth-child(even) td { background:#161E2A; }
+.lib-table tr:nth-child(odd) td { background:#1A2435; }
+.lib-table .chk { text-align:center; font-size:0.8rem; }
+.lib-table .hit { color:#4CAF50; }
+.lib-table .miss { color:#445; }
+
+/* Phase blocks for 319 doc */
+.phase-block { margin:1rem 0; padding:0.75rem; background:#1A2435; border-radius:8px; border-left:3px solid #3D5A80; }
+.phase-block.finale { border-left-color:#8BA7C8; }
+.phase-title { font-size:0.82rem; font-weight:700; color:#8BA7C8; margin-bottom:0.5rem; }
+.phase-domain { font-size:0.72rem; font-weight:700; color:#6A8DAD; margin:0.6rem 0 0.2rem; text-transform:uppercase; }
+.phase-p { font-size:0.75rem; color:#99A; line-height:1.5; margin:0.25rem 0; }
+.phase-closer { font-size:0.78rem; color:#8BA7C8; font-style:italic; margin:0.75rem 0 0.25rem; text-align:center; }
+
+/* Sub-option cards for substitution */
+.sub-card { background:#1A2435; border-radius:6px; padding:0.6rem 0.75rem; margin:0.4rem 0; }
+.sub-title { font-size:0.75rem; font-weight:700; color:#7A9BBD; margin-bottom:0.2rem; }
+.sub-text { font-size:0.72rem; color:#99A; line-height:1.45; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>The Workout Stash <span style="color:var(--accent)">Reforged</span></h1>
+  <div class="header-meta" id="headerMeta"></div>
+</div>
+
+<div class="content" id="armoryContent"></div>
+
+<!-- ═══ THE LIBRARY ═══ -->
+<hr class="library-divider">
+<div class="library-header">
+  <div class="library-title">THE LIBRARY</div>
+  <div class="library-sub">Reference &bull; Framework &bull; Literature</div>
+</div>
+
+<!-- 1. THE MOVEMENT VOCABULARY -->
+<div class="lib-card" id="lib-0">
+  <div class="lib-header" onclick="toggleLib('lib-0')">
+    <div class="lib-icon">🎯</div>
+    <div class="lib-info">
+      <div class="lib-name">The Movement Vocabulary</div>
+      <div class="lib-desc">Eleven patterns. What they are. Why they matter. What breaks when they're missing.</div>
+    </div>
+    <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+  </div>
+  <div class="lib-body"><div class="lib-inner">
+    <div class="lib-quote">The body is one instrument. The framework makes sure you're playing all the strings, not just the loud ones.</div>
+
+    <div class="lib-p">The human body does not recognize muscle groups. It has never heard of chest day. It does not know what a bro-split is, and it would not be impressed if you explained one. What the body recognizes are <strong>patterns of force</strong> — pushing, pulling, hinging, bracing, rotating, landing, carrying. These eleven patterns represent the minimum vocabulary needed to describe everything a human body does.</div>
+
+    <div class="lib-h2">1. Push</div>
+    <div class="lib-label">What It Is</div>
+    <div class="lib-p">Any movement where your body produces force to move a load away from your center of mass, primarily through the chest, shoulders, and triceps. Horizontal pressing, vertical pressing, and explosive extension all qualify.</div>
+    <div class="lib-label">Real-World Anchor</div>
+    <div class="lib-p">Pushing a stalled car. Getting up off the floor. Throwing a punch. Pushing a stroller uphill. Pressing a child overhead to make them laugh.</div>
+    <div class="lib-label">What Happens If It's Missing</div>
+    <div class="lib-p">Push is rarely absent — it is the most naturally over-represented pattern in gym culture. The risk is dominance, not absence. When push chronically outpaces pull, the shoulders internally rotate, the upper back weakens, and injury risk climbs.</div>
+
+    <div class="lib-h2">2. Pull</div>
+    <div class="lib-label">What It Is</div>
+    <div class="lib-p">Any movement where your body produces force to move a load toward your center of mass, primarily through the lats, rhomboids, rear delts, and biceps. Horizontal pulling (rows, face pulls), vertical pulling (pull-ups), and scapular retraction all count.</div>
+    <div class="lib-label">Real-World Anchor</div>
+    <div class="lib-p">Opening a heavy door. Pulling a child onto your hip. Climbing a rope or fence. Rowing a kayak. Hauling a suitcase off an overhead bin.</div>
+    <div class="lib-label">What Happens If It's Missing</div>
+    <div class="lib-p">Shoulder impingement, rotator cuff irritation, postural collapse, reduced punching power. The retraction phase of every punch combination is a pull. Faster scapular retraction means faster combinations. This is the corrective priority.</div>
+
+    <div class="lib-h2">3. Hinge</div>
+    <div class="lib-label">What It Is</div>
+    <div class="lib-p">Any movement where the primary action is bending at the hips while maintaining a neutral spine, loading the posterior chain — hamstrings, glutes, and spinal erectors. Deadlifts, kettlebell swings, good mornings, Romanian deadlifts.</div>
+    <div class="lib-label">Real-World Anchor</div>
+    <div class="lib-p">Picking up a toddler off the floor. Lifting a suitcase. Shoveling snow. This is the most frequently performed movement pattern in daily life and the one most commonly injured when untrained.</div>
+    <div class="lib-label">What Happens If It's Missing</div>
+    <div class="lib-p">Hamstring strains, lower back vulnerability, lumbar overload. Without a trained hinge, the body defaults to spinal flexion under load — the mechanism behind the majority of non-traumatic lower back injuries.</div>
+
+    <div class="lib-h2">4. Squat</div>
+    <div class="lib-label">What It Is</div>
+    <div class="lib-p">Any movement where the primary action is bending at both the knees and hips simultaneously to lower and raise the center of mass. Bodyweight squats, goblet squats, jump squats, thrusters. Knee-dominant bilateral lower body.</div>
+    <div class="lib-label">Real-World Anchor</div>
+    <div class="lib-p">Sitting down and standing up. Getting in and out of a car. Dropping to the floor to play with your kids and getting back up. The inability to squat is the beginning of the end of physical autonomy.</div>
+    <div class="lib-label">What Happens If It's Missing</div>
+    <div class="lib-p">Loss of ankle and hip mobility, quad atrophy, reduced impact absorption, eventual inability to get up from the floor without assistance. The sit-rise test is one of the strongest predictors of all-cause mortality.</div>
+
+    <div class="lib-h2">5. Rotation</div>
+    <div class="lib-label">What It Is</div>
+    <div class="lib-p">Any movement where the trunk produces or resists rotational force. Slam balls, woodchops, throwing, Pallof presses, offset carries. The obliques, transverse abdominis, and hip rotators drive or brake the movement.</div>
+    <div class="lib-label">Real-World Anchor</div>
+    <div class="lib-p">Throwing a ball with your kids. Turning to check a blind spot. Every punch ever thrown. Rotation is the most athletic pattern — almost every sport expresses power through trunk rotation.</div>
+    <div class="lib-label">What Happens If It's Missing</div>
+    <div class="lib-p">Reduced power output in striking and throwing. Lower back vulnerability from compensating with lumbar rotation instead of thoracic. Rotational power is one of the first capacities to decline after 40.</div>
+
+    <div class="lib-h2">6. Core / Anti-Extension</div>
+    <div class="lib-label">What It Is</div>
+    <div class="lib-p">Any movement where the trunk resists forces that want to bend, twist, extend, or collapse the spine. Planks, dead bugs, loaded carries, bracing under heavy compound lifts. The defining feature is stability, not motion.</div>
+    <div class="lib-label">Real-World Anchor</div>
+    <div class="lib-p">Carrying a heavy object without leaning. Maintaining posture under fatigue. Holding a child on one hip while opening a door. Core stability keeps you upright when external forces try to move you in directions you don't want to go.</div>
+    <div class="lib-label">What Happens If It's Missing</div>
+    <div class="lib-p">Lower back pain, postural collapse under load, reduced force transfer in every compound movement. A weak core creates a leak in the kinetic chain that makes everything else less efficient and more dangerous.</div>
+
+    <div class="lib-h2">7. Locomotion</div>
+    <div class="lib-label">What It Is</div>
+    <div class="lib-p">Any movement where your body travels through space under its own power. Running, walking, shadowboxing footwork, crawling, shuffling, sprinting, sled pushing. Your body starts in one place and ends in another.</div>
+    <div class="lib-label">Real-World Anchor</div>
+    <div class="lib-p">Running after a child who has bolted toward a street. Hiking with your family. Humans are endurance locomotion specialists — designed to travel distances.</div>
+    <div class="lib-label">What Happens If It's Missing</div>
+    <div class="lib-p">Cardiovascular deconditioning, loss of gait efficiency, reduced ankle and hip mobility. A body that can deadlift 300 pounds but cannot run a mile has traded its most fundamental capability for a narrow one.</div>
+
+    <div class="lib-h2">8. Plyometric / Power</div>
+    <div class="lib-label">What It Is</div>
+    <div class="lib-p">Any movement where the goal is maximum force production in minimum time. Jump squats, explosive step-ups, slam balls, sprint starts. Power is strength expressed at speed.</div>
+    <div class="lib-label">Real-World Anchor</div>
+    <div class="lib-p">Catching yourself when you trip. Reacting to a child falling. After 40, fast-twitch fibers decline at roughly double the rate of slow-twitch. This is the pattern most likely to prevent a fall from becoming a fracture.</div>
+    <div class="lib-label">What Happens If It's Missing</div>
+    <div class="lib-p">Loss of explosive capacity, increased fall risk, reduced ability to react to sudden demands. The difference between a 44-year-old who moves like an athlete and one who moves like a retiree often comes down to power.</div>
+
+    <div class="lib-h2">9. Mobility</div>
+    <div class="lib-label">What It Is</div>
+    <div class="lib-p">The ability to move a joint through its full range of motion under muscular control. Not flexibility (passive range) — mobility is range you own and can produce force through. Walkouts, thoracic rotations, wall slides, hip flexor stretches.</div>
+    <div class="lib-label">Real-World Anchor</div>
+    <div class="lib-p">Reaching a high shelf without pain. Looking over your shoulder to reverse a car. Playing on the floor with your children and standing back up fluidly.</div>
+    <div class="lib-label">What Happens If It's Missing</div>
+    <div class="lib-p">Compensation patterns cascade. When the thoracic spine cannot rotate, the lumbar spine tries to. When the hips cannot flex fully, the lower back rounds. Every mobility deficit creates a compensation, and every compensation becomes an injury waiting for a trigger.</div>
+
+    <div class="lib-h2">10. Single-Leg</div>
+    <div class="lib-label">What It Is</div>
+    <div class="lib-p">Any movement where one leg bears the primary load. Lunges, split squats, step-ups, single-leg deadlifts. Walking is technically single-leg. Every asymmetry your bilateral squats hide, single-leg work exposes.</div>
+    <div class="lib-label">Real-World Anchor</div>
+    <div class="lib-p">Walking up stairs. Stepping over a baby gate. Pivoting in the ring. Running is a continuous single-leg movement. Unilateral lower body strength and balance are among the strongest predictors of functional longevity.</div>
+    <div class="lib-label">What Happens If It's Missing</div>
+    <div class="lib-p">Undetected side-to-side imbalances, reduced balance and proprioception, increased ACL and meniscus risk from lateral instability. Falls.</div>
+
+    <div class="lib-h2">11. Carry</div>
+    <div class="lib-label">What It Is</div>
+    <div class="lib-p">Any movement where you hold a load and walk. Farmer's walks, suitcase carries, overhead carries. Loaded locomotion combining grip endurance, trunk stability, and gait mechanics under external load.</div>
+    <div class="lib-label">Real-World Anchor</div>
+    <div class="lib-p">Carrying groceries from the car in one trip. Walking through an airport with luggage. Carrying a sleeping child up the stairs. Arguably the most universally functional pattern and the one almost no traditional program includes.</div>
+    <div class="lib-label">What Happens If It's Missing</div>
+    <div class="lib-p">Grip failure under sustained demand, trunk instability under asymmetric loading. For a boxer, grip endurance affects fist integrity in later rounds. For a father, it determines whether you can carry a sleeping 40-lb child from the car to the bed without waking them.</div>
+  </div></div>
+</div>
+
+<!-- 2. THE DECAD FRAMEWORK -->
+<div class="lib-card" id="lib-1">
+  <div class="lib-header" onclick="toggleLib('lib-1')">
+    <div class="lib-icon">📊</div>
+    <div class="lib-info">
+      <div class="lib-name">The DECAD Framework</div>
+      <div class="lib-desc">Minimum standard. Pattern heat map. Corrective overlay. Exercise placement.</div>
+    </div>
+    <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+  </div>
+  <div class="lib-body"><div class="lib-inner">
+
+    <div class="lib-section">
+      <div class="lib-h2">Why DECADs, Not Weeks</div>
+      <div class="lib-p">319 days do not divide cleanly into weeks. They divide into <strong>31 DECADs of 10 days each</strong>, plus a 9-day closing stretch. The DECAD is the natural planning unit — long enough to cover all eleven patterns with honest frequency, short enough to course-correct before gaps compound, and mathematically clean against the 319-day arc.</div>
+      <div class="lib-p">A 7-day week gives you limited room to recover and still hit every corrective target. A 10-day cycle gives you three additional sessions to distribute across the patterns that need the most attention. The hinge corrective that needs three sessions per cycle can get a dedicated day and two supplementary appearances. The carry pattern that needs two sessions has room to breathe. Eccentric tendon work — which requires recovery days between sessions — can be spaced properly instead of crammed.</div>
+      <div class="lib-p">DECAD 1 runs Days 1–10. DECAD 2 runs Days 11–20. The math carries all the way to DECAD 31 (Days 301–310), followed by a 9-day closing period (Days 311–319) that operates as a compressed final cycle.</div>
+      <div class="lib-quote">The DECAD is the unit that matters. The day is just a vote.</div>
+    </div>
+
+    <div class="lib-section">
+      <div class="lib-h2">DECAD Minimum Standard</div>
+      <div class="lib-p">The floor — the minimum frequency each pattern needs across a 10-day DECAD to maintain or build capacity over 319 days. These are not aspirational targets. They are the line below which a gap starts forming.</div>
+      <table class="lib-table">
+        <tr><th>Pattern</th><th>DECAD Min</th><th>Rationale</th></tr>
+        <tr><td><strong>Push</strong></td><td>3–4 sessions</td><td>Happens naturally through boxing. Monitor to ensure it doesn't outpace pull.</td></tr>
+        <tr><td><strong>Pull</strong></td><td>≥4 sessions</td><td>Corrective priority. Must outpace push by 2:1 volume. Near-daily if possible.</td></tr>
+        <tr><td><strong>Hinge</strong></td><td>≥3 sessions</td><td>Corrective priority. Most neglected pattern for years. Three dedicated sessions minimum.</td></tr>
+        <tr><td><strong>Squat</strong></td><td>3–4 sessions</td><td>Foundation pattern. Bilateral and unilateral combined. Pairs easily with most days.</td></tr>
+        <tr><td><strong>Rotation</strong></td><td>3–4 sessions</td><td>Your strongest pattern. Boxing covers it, but dedicated work builds anti-rotation too.</td></tr>
+        <tr><td><strong>Core / Anti-Ext</strong></td><td>6–8 sessions</td><td>Background pattern in almost every session. Carries, planks, bracing all count.</td></tr>
+        <tr><td><strong>Locomotion</strong></td><td>4–5 sessions</td><td>Running, shadowboxing footwork, loaded carries. Body designed to travel distances.</td></tr>
+        <tr><td><strong>Plyo / Power</strong></td><td>2–3 sessions</td><td>Critical at 44. Highest recovery cost. Two to three quality sessions per DECAD.</td></tr>
+        <tr><td><strong>Mobility</strong></td><td>Daily (10/10)</td><td>The non-negotiable. Even five minutes. The pattern that protects all others.</td></tr>
+        <tr><td><strong>Single-Leg</strong></td><td>3–4 sessions</td><td>Exposes asymmetries, builds balance, protects knees. Needs deliberate inclusion.</td></tr>
+        <tr><td><strong>Carry</strong></td><td>≥2 sessions</td><td>Corrective target. Two sessions per DECAD builds grip and trunk stability.</td></tr>
+      </table>
+      <div class="lib-p"><strong>Tracked DECAD Targets:</strong> Pull ≥ 2× push volume &bull; Hinge ≥ 3 sessions &bull; Carry ≥ 2 sessions &bull; Eccentric ≥ 2 sessions &bull; T-spine daily.</div>
+      <div class="lib-p">These minimums overlap. A single session can serve four to eight patterns simultaneously. The DECAD minimum does not mean eleven separate workouts — it means intentional coverage distributed across ten sessions.</div>
+    </div>
+
+    <div class="lib-section">
+      <div class="lib-h2">The DECAD Laid Flat — Pattern Heat Map</div>
+      <div class="lib-p">Every pattern, every day, at a glance. Before your session, scan the row for any pattern showing too many empty cells and choose movements to fill it.</div>
+      <div style="overflow-x:auto; -webkit-overflow-scrolling:touch;">
+      <table class="lib-table">
+        <tr><th>Pattern</th><th class="chk">A</th><th class="chk">B</th><th class="chk">C</th><th class="chk">D</th><th class="chk">E</th><th class="chk">F</th><th class="chk">G</th><th class="chk">H</th><th class="chk">I</th><th class="chk">J</th></tr>
+        <tr><td><strong>Push</strong></td><td class="chk hit">✓</td><td class="chk miss">—</td><td class="chk miss">—</td><td class="chk hit">✓</td><td class="chk miss">—</td><td class="chk hit">✓</td><td class="chk miss">—</td><td class="chk miss">—</td><td class="chk miss">—</td><td class="chk miss">—</td></tr>
+        <tr><td><strong>Pull</strong></td><td class="chk hit">✓</td><td class="chk hit">✓</td><td class="chk miss">—</td><td class="chk hit">✓</td><td class="chk hit">✓</td><td class="chk miss">—</td><td class="chk miss">—</td><td class="chk hit">✓</td><td class="chk miss">—</td><td class="chk hit">✓</td></tr>
+        <tr><td><strong>Hinge</strong></td><td class="chk miss">—</td><td class="chk hit">✓</td><td class="chk miss">—</td><td class="chk miss">—</td><td class="chk hit">✓</td><td class="chk miss">—</td><td class="chk hit">✓</td><td class="chk miss">—</td><td class="chk miss">—</td><td class="chk miss">—</td></tr>
+        <tr><td><strong>Squat</strong></td><td class="chk miss">—</td><td class="chk miss">—</td><td class="chk miss">—</td><td class="chk miss">—</td><td class="chk hit">✓</td><td class="chk miss">—</td><td class="chk miss">—</td><td class="chk miss">—</td><td class="chk miss">—</td><td class="chk miss">—</td></tr>
+        <tr><td><strong>Rotation</strong></td><td class="chk hit">✓</td><td class="chk miss">—</td><td class="chk miss">—</td><td class="chk hit">✓</td><td class="chk miss">—</td><td class="chk hit">✓</td><td class="chk miss">—</td><td class="chk miss">—</td><td class="chk miss">—</td><td class="chk miss">—</td></tr>
+        <tr><td><strong>Core / Anti-Ext</strong></td><td class="chk hit">✓</td><td class="chk hit">✓</td><td class="chk hit">✓</td><td class="chk hit">✓</td><td class="chk hit">✓</td><td class="chk hit">✓</td><td class="chk hit">✓</td><td class="chk hit">✓</td><td class="chk hit">✓</td><td class="chk hit">✓</td></tr>
+        <tr><td><strong>Locomotion</strong></td><td class="chk hit">✓</td><td class="chk miss">—</td><td class="chk hit">✓</td><td class="chk miss">—</td><td class="chk miss">—</td><td class="chk hit">✓</td><td class="chk miss">—</td><td class="chk hit">✓</td><td class="chk miss">—</td><td class="chk miss">—</td></tr>
+        <tr><td><strong>Plyo / Power</strong></td><td class="chk hit">✓</td><td class="chk miss">—</td><td class="chk miss">—</td><td class="chk hit">✓</td><td class="chk miss">—</td><td class="chk hit">✓</td><td class="chk miss">—</td><td class="chk hit">✓</td><td class="chk miss">—</td><td class="chk miss">—</td></tr>
+        <tr><td><strong>Mobility</strong></td><td class="chk hit">✓</td><td class="chk miss">—</td><td class="chk hit">✓</td><td class="chk miss">—</td><td class="chk hit">✓</td><td class="chk hit">✓</td><td class="chk hit">✓</td><td class="chk miss">—</td><td class="chk hit">✓</td><td class="chk hit">✓</td></tr>
+        <tr><td><strong>Single-Leg</strong></td><td class="chk miss">—</td><td class="chk hit">✓</td><td class="chk hit">✓</td><td class="chk miss">—</td><td class="chk miss">—</td><td class="chk hit">✓</td><td class="chk hit">✓</td><td class="chk miss">—</td><td class="chk hit">✓</td><td class="chk miss">—</td></tr>
+        <tr><td><strong>Carry</strong></td><td class="chk miss">—</td><td class="chk hit">✓</td><td class="chk miss">—</td><td class="chk miss">—</td><td class="chk miss">—</td><td class="chk miss">—</td><td class="chk miss">—</td><td class="chk hit">✓</td><td class="chk miss">—</td><td class="chk miss">—</td></tr>
+        <tr><td><strong>Eccentric</strong></td><td class="chk miss">—</td><td class="chk miss">—</td><td class="chk miss">—</td><td class="chk miss">—</td><td class="chk miss">—</td><td class="chk miss">—</td><td class="chk hit">✓</td><td class="chk miss">—</td><td class="chk hit">✓</td><td class="chk miss">—</td></tr>
+        <tr><td><strong>Patterns/Day</strong></td><td class="chk"><strong>7</strong></td><td class="chk"><strong>5</strong></td><td class="chk"><strong>4</strong></td><td class="chk"><strong>5</strong></td><td class="chk"><strong>5</strong></td><td class="chk"><strong>7</strong></td><td class="chk"><strong>5</strong></td><td class="chk"><strong>5</strong></td><td class="chk"><strong>4</strong></td><td class="chk"><strong>3</strong></td></tr>
+      </table>
+      </div>
+      <div class="lib-p">Pull appears 6 times. Mobility appears 7. Hinge hits 3 (corrective minimum). Carry hits 2 (corrective minimum). Eccentric hits 2 (corrective minimum). Squat appears light at 1 — layers easily into Days A, B, D, F, or G.</div>
+    </div>
+
+    <div class="lib-section">
+      <div class="lib-h2">Corrective Protocol Overlay</div>
+      <div class="lib-p">The five tracked imbalances mapped onto the DECAD template. Shows which days serve which corrective targets and makes compliance checkable at a glance.</div>
+      <table class="lib-table">
+        <tr><th>Corrective Target</th><th>DECAD Min</th><th>Best Days</th><th>Compliance Check</th></tr>
+        <tr><td><strong>Pull ≥ 2× Push volume</strong></td><td>≥4 sessions</td><td>A, B, D, E, H, J</td><td>6 pull days vs 3 push days. Ratio achievable with intentional volume.</td></tr>
+        <tr><td><strong>Hinge ≥ 3 sessions</strong></td><td>3 sessions</td><td>B, E, G</td><td>Three dedicated hinge days. Non-negotiable.</td></tr>
+        <tr><td><strong>Carry ≥ 2 sessions</strong></td><td>2 sessions</td><td>B, H</td><td>Two carry days. Both serve grip and trunk stability.</td></tr>
+        <tr><td><strong>Eccentric ≥ 2 sessions</strong></td><td>2 sessions</td><td>G, I</td><td>Spaced within the DECAD for tendon recovery.</td></tr>
+        <tr><td><strong>T-spine daily</strong></td><td>10/10</td><td>All days — 5 min min</td><td>Mobility appears 7/10 in template. Add to B, D, H for 10/10.</td></tr>
+      </table>
+    </div>
+
+    <div class="lib-section">
+      <div class="lib-h2">Corrective Exercises by Suggested DECAD Day</div>
+      <table class="lib-table">
+        <tr><th>Exercise</th><th>Imbalance</th><th>Suggested Day</th></tr>
+        <tr><td>Band External Rotation</td><td>Push-to-Pull (CRITICAL)</td><td>E — pairs with face pulls and rows</td></tr>
+        <tr><td>Romanian Deadlift</td><td>Hinge (CRITICAL)</td><td>E — primary hinge variation</td></tr>
+        <tr><td>Hip Bridge</td><td>Hinge (CRITICAL)</td><td>E or G — low-intensity hinge finisher</td></tr>
+        <tr><td>Suitcase Carry</td><td>Carry (HIGH)</td><td>H — rotates with farmer's walk</td></tr>
+        <tr><td>Overhead Carry</td><td>Carry (HIGH)</td><td>H — adds shoulder stability demand</td></tr>
+        <tr><td>Foam Roller Thoracic Ext.</td><td>T-Spine Mobility (HIGH)</td><td>C, E, G, I, J — mobility opener</td></tr>
+        <tr><td>Open-Book Rotation</td><td>T-Spine Mobility (HIGH)</td><td>C, G, I, J — mobility block</td></tr>
+        <tr><td>Wall Slide</td><td>T-Spine Mobility (HIGH)</td><td>C, F, I, J — mobility block</td></tr>
+        <tr><td>Tempo Squat</td><td>Eccentric Tendon (MOD)</td><td>C or G — post-run or eccentric focus</td></tr>
+        <tr><td>Slow-Descent Split Squat</td><td>Eccentric Tendon (MOD)</td><td>F or I — single-leg block</td></tr>
+        <tr><td>Eccentric Step-Down</td><td>Eccentric Tendon (MOD)</td><td>G or I — eccentric focus</td></tr>
+      </table>
+    </div>
+
+  </div></div>
+</div>
+
+<!-- 3. SUBSTITUTION LOGIC -->
+<div class="lib-card" id="lib-2">
+  <div class="lib-header" onclick="toggleLib('lib-2')">
+    <div class="lib-icon">🔄</div>
+    <div class="lib-info">
+      <div class="lib-name">Substitution Logic</div>
+      <div class="lib-desc">No kettlebell? No bands? Low energy? Under 15 minutes? Adapt without losing the pattern.</div>
+    </div>
+    <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+  </div>
+  <div class="lib-body"><div class="lib-inner">
+    <div class="lib-quote">Training plans do not survive contact with life. Here is how to adapt when equipment, energy, or time is not what the template assumes.</div>
+
+    <div class="sub-card">
+      <div class="sub-title">If You Have No Kettlebell</div>
+      <div class="sub-text">Replace KB Swing with Good Mornings (bodyweight, higher reps) or Dumbbell Deadlift (heavier, lower reps). The hinge pattern stays. The tool changes.</div>
+    </div>
+    <div class="sub-card">
+      <div class="sub-title">If You Have No Bands</div>
+      <div class="sub-text">Replace Band Pull-Apart with bodyweight variation (arms extended, squeeze shoulder blades). Replace Face Pull with Inverted Row at a high angle. Replace Band External Rotation with side-lying dumbbell external rotation at light weight.</div>
+    </div>
+    <div class="sub-card">
+      <div class="sub-title">If Energy Is Low</div>
+      <div class="sub-text">Drop to the Minimum Viable Session for whatever day type you are on. Every template has one. The minimum viable session is not a consolation prize — it is the designed floor that still serves the DECAD's pattern integrity.</div>
+    </div>
+    <div class="sub-card">
+      <div class="sub-title">If Time Is Under 15 Minutes</div>
+      <div class="sub-text"><strong>Option 1:</strong> DB Thruster (squat + push) + Inverted Row (pull) + Farmer's Walk (carry + core + locomotion) = 5 patterns.<br>
+      <strong>Option 2:</strong> KB Swing (hinge + power) + Pull-Up (pull) + Open-Book Rotation (mobility) = 4 patterns.<br>
+      <strong>Option 3:</strong> Shadow Boxing (push + rotation + locomotion + power) + Band Pull-Apart (pull) + Wall Slides (mobility) = 6 patterns.</div>
+    </div>
+    <div class="sub-card">
+      <div class="sub-title">If You Are Training Outside (No Equipment)</div>
+      <div class="sub-text">Running (locomotion) + Bodyweight Squats (squat) + Walking Lunges (single-leg) + Push-Ups (push) + Bear Crawl (locomotion + core) = 5 patterns with nothing but the ground and gravity. Add a jog back with a heavy rock for carry and hinge.</div>
+    </div>
+  </div></div>
+</div>
+
+<!-- 4. WHAT 319 DAYS WILL BUILD -->
+<div class="lib-card" id="lib-3">
+  <div class="lib-header" onclick="toggleLib('lib-3')">
+    <div class="lib-icon">🔥</div>
+    <div class="lib-info">
+      <div class="lib-name">What 319 Days Will Build</div>
+      <div class="lib-desc">The full promise. Body, mind, spirit — every phase. Read this on the nights you can't push.</div>
+    </div>
+    <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+  </div>
+  <div class="lib-body"><div class="lib-inner">
+    <div class="lib-quote">Read this on the nights you can't push. Let it pull.</div>
+    <div class="lib-p">Everything in this document is grounded in the system you've already built. The corrective protocols, the pattern architecture, the nutrition phases, the running progression, the appraisal dimensions — these aren't aspirations. They're infrastructure. Three domains. Every phase. Body, Mind, Spirit. Because this was never just about fitness.</div>
+
+    <!-- PHASE 1 -->
+    <div class="phase-block">
+      <div class="phase-title">Days 1–30 &mdash; The Foundation Pour</div>
+      <div class="lib-p">You're here. Ten days in, already deeper than most people get in a year of training. This phase is about establishing the neural pathways, the movement vocabulary, and the daily practice that everything else is built on.</div>
+
+      <div class="phase-domain">The Body</div>
+      <div class="phase-p">Corrective exercises become familiar. The pull-up, inverted row, good morning, kettlebell swing, farmer's walk, foam roller, step-downs — these stop being "prescribed" and start being yours. Your body begins to recognize the difference between the patterns.</div>
+      <div class="phase-p">Thoracic spine begins to unlock. You'll feel this before you see it — less stiffness getting out of bed, less lower back compensating during rotation. The audible cracks on the foam roller start to quiet as the segments regain individual mobility.</div>
+      <div class="phase-p">Shoulder posture begins to shift. Twenty years of forward pull doesn't reverse in thirty days, but the 2:1 pull-to-push ratio is actively remodeling the force balance around your shoulder girdle.</div>
+      <div class="phase-p">Running base establishes. From 1.6 miles to approximately 15–18 cumulative miles by end of month. The eccentric heel drops are fortifying the Achilles, the pre-run activation circuit is teaching the lateral chain to fire.</div>
+      <div class="phase-p">Weight trends toward 212–214 lbs. The Race Fuel phase holds you in a mild deficit of ~380 cal/day. The AM readings tightening, the swings narrowing, the data telling a story of a body beginning to respond.</div>
+
+      <div class="phase-domain">The Clean Fuel Effect</div>
+      <div class="phase-p">No alcohol, no processed sugar, no over-indulgence. Within the first two weeks, your sleep architecture begins to rebuild. Facial bloating begins to recede. Blood sugar stabilizes. Gut inflammation quiets. These changes are happening underneath the training, accelerating every other adaptation.</div>
+
+      <div class="phase-domain">The Mind</div>
+      <div class="phase-p">Honest self-assessment becomes automatic. By Day 30 you've scored yourself across 11 dimensions thirty times. You can no longer lie to yourself about a session's quality.</div>
+      <div class="phase-p">Compliance-driven thinking replaces inspiration-driven thinking. You don't wait to feel like training. You look at what the system needs and you serve it.</div>
+
+      <div class="phase-domain">The Spirit</div>
+      <div class="phase-p">The streak becomes identity. Thirty consecutive days through travel, snow days, sick kids, four hours of sleep, hotel gyms, living room floors — rewires your self-concept. You're no longer the man who starts and stops. You're the man who doesn't miss.</div>
+      <div class="phase-closer">By Day 30 you won't look different. You'll move different. And you'll think different. That's the floor being poured.</div>
+    </div>
+
+    <!-- PHASE 2 -->
+    <div class="phase-block">
+      <div class="phase-title">Days 31–63 &mdash; The Proving Ground</div>
+      <div class="lib-p">The Jersey City Half Marathon is Day 63. Everything you've built gets stress-tested against an actual performance goal.</div>
+
+      <div class="phase-domain">The Body</div>
+      <div class="phase-p">Running volume peaks at 20–25 miles/week in the final training weeks before taper. Your body has adapted from a 1.6-mile first run to sustained efforts of 8–10 miles.</div>
+      <div class="phase-p">Race day weight of 210–212 lbs is achievable. Eccentric tendon resilience is measurable. Hinge pattern is automatic. Three-plus sessions per decad for six consecutive decads means 18+ dedicated hinge sessions.</div>
+      <div class="phase-p">You run 13.1 miles on April 19th. Not a maybe. A will.</div>
+
+      <div class="phase-domain">The Clean Fuel Effect</div>
+      <div class="phase-p">Sixty days without alcohol. Resting heart rate has dropped 3–7 BPM, directly improving running economy. Your body accesses stored fat more efficiently during training. Your skin has changed — complexion clears, under-eye darkness fades.</div>
+
+      <div class="phase-domain">The Mind</div>
+      <div class="phase-p">You've scored yourself 63 times. The appraisal composite average has climbed from the mid-60s toward 72–75. The first Monthly Synthesis reveals patterns invisible at the daily level.</div>
+      <div class="phase-p">Race preparation teaches pacing — in training and in life. Not every day needs to be a peak. Some days are mile 4, steady, unremarkable, essential.</div>
+
+      <div class="phase-domain">The Spirit</div>
+      <div class="phase-p">Crossing a finish line at 44 after starting from 1.6 miles eight weeks earlier is a future memory made real. The encyclopedia hits 80–100 exercises documented. Sixty-three consecutive days. The streak is no longer fragile. It's load-bearing.</div>
+      <div class="phase-closer">Day 63 you cross a finish line. But the race was won in the basement on the nights you almost didn't show up.</div>
+    </div>
+
+    <!-- PHASE 3 -->
+    <div class="phase-block">
+      <div class="phase-title">Days 64–120 &mdash; The Cut</div>
+      <div class="lib-p">Phase 2 of the Nutrition Architecture activates: The Cut. The performance goal is behind you. Now the system pivots to aggressive, sustainable body recomposition.</div>
+
+      <div class="phase-domain">The Body</div>
+      <div class="phase-p">Weight drops from ~210 toward 200–205 lbs. The muscle you've been building and protecting through Race Fuel stays. The fat that's been insulating it goes.</div>
+      <div class="phase-p">All five original corrective imbalances are functionally resolved. The hinge pattern is no longer corrective — it's just how you train. Visible muscle definition emerges in places your body hasn't recruited in decades.</div>
+      <div class="phase-p">Ground Zero and The Metronome evolve. You may create new circuits. The creative act of designing your own training is part of the Athletic Generalism identity.</div>
+
+      <div class="phase-domain">The Clean Fuel Effect</div>
+      <div class="phase-p">Four months clean. The metabolic transformation is now structural, not just behavioral. Fasting glucose is lower. Triglycerides have dropped. HDL cholesterol has risen. Cognitive performance is at a level you haven't experienced in years. The cravings are gone. Not managed. Gone.</div>
+
+      <div class="phase-domain">The Mind</div>
+      <div class="phase-p">The appraisal composite average pushes toward 78–82. Nutrition compliance is habitual. You're no longer tracking to build the habit. You're tracking because the data is interesting.</div>
+
+      <div class="phase-domain">The Spirit</div>
+      <div class="phase-p">You pass 100 consecutive days. Then 120. The streak is no longer something you protect. It's something that protects you. Your kids have watched you do this for four months. They understand that Dad does this. Every day. No exceptions.</div>
+      <div class="phase-closer">By Day 120, the man who couldn't keep a streak alive has kept one alive for four months straight. The identity isn't aspirational. It's proven.</div>
+    </div>
+
+    <!-- PHASE 4 -->
+    <div class="phase-block">
+      <div class="phase-title">Days 121–210 &mdash; The Long Middle</div>
+      <div class="lib-p">The novelty is gone. The race is months behind you. The initial excitement has been replaced by something quieter and more powerful: routine mastery.</div>
+
+      <div class="phase-domain">The Body</div>
+      <div class="phase-p">Weight approaches 195–200 lbs. You're down 15–20 lbs from your starting weight with dramatically different body composition. Athletic Generalism becomes visible capability. You can deadlift, carry heavy loads, run 10 miles, throw rotational power, hold a plank, absorb impact, and move laterally — all in the same week, all without injury.</div>
+      <div class="phase-p">Thoracic spine is functionally mobile. Running is effortless at paces that used to be hard. A 9:37 pace that was your ceiling in February is now your recovery jog.</div>
+
+      <div class="phase-domain">The Clean Fuel Effect</div>
+      <div class="phase-p">Seven months clean. Your relationship with food has been completely rewritten. You eat to fuel, not to soothe. The emotional eating patterns that were tangled up with stress, depletion, and the end-of-day crash have been replaced by a system. The financial savings are real and accumulating.</div>
+
+      <div class="phase-domain">The Mind</div>
+      <div class="phase-p">The appraisal composite pushes into the mid-80s. You think in patterns. Not just movement patterns. You see your work week as a pattern architecture. You see your marriage as a compliance tracker. Decision fatigue around training is gone.</div>
+
+      <div class="phase-domain">The Spirit</div>
+      <div class="phase-p">Two hundred consecutive days. You have done something that most human beings will never do in any domain. The future memories are becoming present memories. You're already more physically capable than you were six months ago.</div>
+      <div class="phase-closer">By Day 210, people will ask what program you're on. The answer is: my own. Built from scratch. Every single day. For seven months.</div>
+    </div>
+
+    <!-- PHASE 5 -->
+    <div class="phase-block finale">
+      <div class="phase-title">Days 211–319 &mdash; The Final Hundred</div>
+      <div class="lib-p">Phase 3 of the Nutrition Architecture: Hold &amp; Perform. The cut is complete or nearing completion. The final hundred days aren't about building. They're about proving what was built.</div>
+
+      <div class="phase-domain">The Body</div>
+      <div class="phase-p"><strong>Target physique: 185–190 lbs, sub-11% body fat, at 5'10", age 44.</strong> That's a 28–33 lb transformation from your Day 1 starting point of 218 lbs. Not through starvation. Not through overtraining. Through 319 days of systematic, intelligent, honest work.</div>
+      <div class="phase-p">Every movement pattern is strong. Pull-ups in sets of 10+. Deadlifts at bodyweight or above. Carries at 70+ lbs per hand for distance. Injury resilience is fundamentally different. Running is a permanent capability.</div>
+
+      <div class="phase-domain">The Clean Fuel Effect</div>
+      <div class="phase-p">Ten months clean. You've exited the cycle permanently. The shame-to-ego pendulum that once defined your relationship with your body has no entry point. Your bloodwork on December 31st will tell the story in clinical language. But the story you feel is simpler. You feel like the man you were supposed to become.</div>
+      <div class="phase-p">The model you've set for your children is complete. Not "Dad doesn't drink." Not "Dad eats healthy." Something deeper: Dad chose what went into his body with the same care and intentionality he chose how he moved it.</div>
+
+      <div class="phase-domain">The Mind</div>
+      <div class="phase-p">The appraisal system has produced 319 data points across 11 dimensions. 3,509 individual scores. You've written a book. Not in the abstract "someday I'll write" sense. In the literal sense. 319 daily entries. 31 decad roundups. 10 monthly syntheses. 150+ exercise encyclopedia entries.</div>
+
+      <div class="phase-domain">The Spirit</div>
+      <div class="phase-p">Three hundred and nineteen consecutive days. Not a single miss. Through winter storms, summer heat, school years, holidays, sick days, travel, family emergencies, work crises, and the ordinary, grinding, beautiful, exhausting days that make up the vast majority of a life.</div>
+      <div class="phase-p">The athlete is back. Not the boxer. Not the soldier. Not the man who defined himself by one sport or one era. A complete mover. An Athletic Generalist.</div>
+      <div class="phase-p">Your children watched. For 319 days, they watched their father show up. Not always strong. Not always inspired. But always there. Always honest about it. Always willing to do the minimum when the maximum wasn't available. They don't know the word "consistency." They know the shape of it — and it looks like their father, every morning, doing the thing.</div>
+      <div class="phase-closer">You didn't just train for 319 days. You became the man who trains every day. That's not a resolution. That's a renovation.</div>
+    </div>
+
+    <!-- CLOSER -->
+    <div style="margin-top:1.5rem; padding:1rem; text-align:center; border-top:1px solid #253248;">
+      <div class="lib-h2" style="border:none; text-align:center;">For the Nights You Can't Push</div>
+      <div class="lib-p" style="text-align:center;">Not the body. Not the book. Not the appraisal scores or the finish line or the number on the scale.</div>
+      <div class="lib-p" style="text-align:center;"><strong>What's worth it is who you're becoming while you do it.</strong></div>
+      <div class="lib-p" style="text-align:center;">The man who logs the F. The man who shows up at 60%. The man who foam-rolls on four hours of sleep and calls it a day and means it. The man whose kids see him choose the hard thing, not because he's superhuman, but because he built a system that makes the hard thing the easy thing.</div>
+      <div class="lib-quote" style="text-align:center; border:none; padding:0;">The ceiling will take care of itself. Build the floor.</div>
+      <div class="lib-p" style="text-align:center; margin-top:1rem; color:#8BA7C8;"><strong>Tomorrow morning. Whatever it looks like. Show up.</strong></div>
+    </div>
+
+  </div></div>
+</div>
+
+<div style="text-align:center; padding:2rem 0 1rem; font-size:0.65rem; color:#445;">
+  The Workout Stash Reforged &bull; The Library &bull; Movement Encyclopedia &bull; 319 Days
+</div>
+
+<div class="footer">
+  <div class="quote">&ldquo;Check the gap. Grab the day. Go.&rdquo;</div>
+  <div class="project">The Movement Encyclopedia &bull; 319 Days</div>
+</div>
+
+<script>
+const days = [
+  {
+    letter: "A", name: "Full Spectrum (Boxing + Strength)", patterns: "Push, Pull, Squat, Rotation, Core, Locomotion, Plyo, Mobility", count: "10/11",
+    mvs: "1. Shadow Boxing (3 rounds) — 2. Pull-Ups (3 sets) — 3. 5 min mobility. Twenty minutes.",
+    workouts: [
+      { num: 14, name: "The Arena", badge: "primary", type: "Boxing-Hybrid", time: "45–55 min", rounds: "3 + 10 rounds", coverage: "11/11", gap: null,
+        warmup: ["Walkout ×5", "Open-Book Rotation ×8/side", "Hip Flexor Stretch ×30 sec/side", "+ Band Pull-Apart ×15", "BW Squat ×10"],
+        work: ["PHASE 1 (3 rds):", "Battle Ropes ×30 sec", "Mountain Climbers ×30 sec", "Box Jumps ×30 sec", "→ Rd1: Pull-Ups ×10 / Rd2: DL ×10 / Rd3: Squats ×10", "1 Olympic Lap (FAST)", "+ Jump Lunge × Tabata Set", "PHASE 2 (10 rds): 3 min/1 min", "Shadow Boxing ×4 rds", "Bag Work ×6 rds"],
+        finisher: ["Farmer's Walk — 2 min continuous, rest as needed"],
+        cooldown: ["Foam Roller T-Spine ×90 sec", "Wall Slide ×10", "Tempo Squat (3-1-1) ×6"]
+      },
+      { num: 12, name: "The Boxing Plank Ladder", badge: "primary", type: "Boxing-Hybrid", time: "25–30 min", rounds: "3 rounds", coverage: "10/11", gap: "Single-Leg",
+        warmup: ["Walkout ×5", "Open-Book Rotation ×8/side", "Hip Flexor Stretch ×30 sec/side", "+ Band Pull-Apart ×15", "BW Squat ×10"],
+        work: ["Left 3-punch combo (2 min)", "Left Elbow Plank (30–45 sec)", "Right 3-punch combo (2 min)", "Right Elbow Plank (30–45 sec)", "5-punch combo 1-1-2 (2 min)", "Elbow Plank (30–45 sec)", "+ Face Pull (band) ×15", "+ KB Swing ×10", "+ Goblet Squat ×8"],
+        finisher: ["Farmer's Walk ×1 min"],
+        cooldown: ["Foam Roller T-Spine ×90 sec", "Wall Slide ×10", "Tempo Squat (3-1-1) ×6"]
+      },
+      { num: 19, name: "The Metabolic Twenty", badge: "secondary", type: "Metabolic Grinder", time: "55–60 min", rounds: "3 rds × 20 exercises", coverage: "11/11", gap: null,
+        warmup: ["Walkout ×5", "Open-Book Rotation ×8/side", "Hip Flexor Stretch ×30 sec/side", "+ Band Pull-Apart ×15", "BW Squat ×10"],
+        work: ["45s work / 15s rest:", "Burpees / Ab Spring-Ups / Plyo Lunges / Push-Ups / High Knees", "MCs / Kick-Ups / Prisoner Squats / Alt Side Planks", "Bunny Hop Sprawls / Oblique In&Outs / Rotational Jump Lunges", "Low Plyo Push-Ups / Tuck Jumps / Supermans / Rotational MCs", "Squat-to-SJ / Hip Thrusts / Alt 1-Arm Burpees", "+ REST 90s — Band Pull-Apart ×20 (Rd 1)", "+ REST 90s — Face Pull ×15 (Rd 2)", "+ Inverted Row ×15 (Rd 3)"],
+        finisher: ["Farmer's Walk ×90 sec"],
+        cooldown: ["Foam Roller T-Spine ×90 sec", "Wall Slide ×10", "Tempo Squat (3-1-1) ×6 — OMIT"]
+      }
+    ]
+  },
+  {
+    letter: "B", name: "Posterior Chain + Carry", patterns: "Hinge, Pull, Carry, Core, Mobility", count: "6/11",
+    mvs: "1. KB Swings (50 reps) — 2. DB Rows (3×10) — 3. Farmer's Walk (3 min). Fifteen minutes.",
+    workouts: [
+      { num: 20, name: "The Farmer's Blueprint", badge: "primary", type: "KB Skill Circuit", time: "30–35 min", rounds: "2–3 rounds", coverage: "10/11", gap: "Single-Leg",
+        warmup: ["Walkout ×5", "Open-Book Rotation ×8/side", "Hip Flexor Stretch ×30 sec/side", "+ Band Pull-Apart ×15", "BW Squat ×10"],
+        work: ["Goblet Jump Squats ×10", "Med Ball Planks ×30 sec", "KB Snatches ×8/side", "Squats ×20", "Farmer Carry ×2 laps", "Burpees ×10", "Push-Ups ×8", "+ DB Row ×8/side", "Kneeling OH Press ×8/side", "+ Band Pull-Apart ×12"],
+        finisher: ["+ Open-Book Rotation ×8/side"],
+        cooldown: ["Foam Roller T-Spine ×90 sec", "Wall Slide ×10", "Tempo Squat (3-1-1) ×6"]
+      },
+      { num: 10, name: "The KB Triple Threat", badge: "primary", type: "KB Skill Circuit", time: "25–30 min", rounds: "4 rounds", coverage: "10/11", gap: "Single-Leg",
+        warmup: ["Walkout ×5", "Open-Book Rotation ×8/side", "Hip Flexor Stretch ×30 sec/side", "+ Band Pull-Apart ×15", "BW Squat ×10"],
+        work: ["KB Deadlift ×8", "KB High Pull ×8", "KB Goblet Squat ×8", "+ Push-Up ×10", "+ Plank Hold ×30 sec"],
+        finisher: ["Farmer's Walk ×90 sec"],
+        cooldown: ["Foam Roller T-Spine ×90 sec", "Wall Slide ×10", "Tempo Squat (3-1-1) ×6"]
+      },
+      { num: 22, name: "The 300 Swing Challenge", badge: "secondary", type: "Metabolic Grinder", time: "35–45 min", rounds: "Descending 16→9", coverage: "10/11", gap: "Single-Leg",
+        warmup: ["Walkout ×5", "Open-Book Rotation ×8/side", "Hip Flexor Stretch ×30 sec/side", "+ Band Pull-Apart ×15", "BW Squat ×10"],
+        work: ["KB Swings × set (desc: 16,16,16,12,12,10,10,9,9...)", "Wall Balls ×20 (every pause)", "+ Band Pull-Apart ×12 OR Plank ×30 sec (every 3rd break)", "Front KB Squats at 53 lbs (between sets)"],
+        finisher: ["Farmer's Walk ×2 min (heaviest)"],
+        cooldown: ["Foam Roller T-Spine ×90 sec", "Wall Slide ×10", "Tempo Squat (3-1-1) ×6"]
+      }
+    ]
+  },
+  {
+    letter: "C", name: "Locomotion + Mobility", patterns: "Locomotion, Mobility, Core, Single-Leg", count: "5/11",
+    mvs: "1. Open-Book Rotation (10 each) — 2. Wall Slides (10) — 3. 15-min run. Twenty minutes.",
+    workouts: [
+      { num: 6, name: "Row, Climb, Run", badge: "primary", type: "Metabolic Grinder", time: "30–35 min", rounds: "4 rounds", coverage: "11/11", gap: null,
+        warmup: ["Walkout ×5", "Open-Book Rotation ×8/side", "Hip Flexor Stretch ×30 sec/side", "+ Band Pull-Apart ×15", "BW Squat ×10"],
+        work: ["KB Row ×10", "Mountain Climbers ×100", "+ Push-Up ×10", "Lunge 3/4 Lap", "Run 1 Lap", "+ KB Swing ×10"],
+        finisher: ["Suitcase Carry ×30 sec/side"],
+        cooldown: ["Foam Roller T-Spine ×90 sec", "Wall Slide ×10", "Tempo Squat (3-1-1) ×6"]
+      },
+      { num: 13, name: "Stairwell Striker", badge: "primary", type: "Boxing-Hybrid", time: "25–30 min", rounds: "10 stair runs", coverage: "11/11", gap: null,
+        warmup: ["Open-Book Rotation ×6/side", "Hip Flexor Stretch ×20 sec/side", "+ Band Pull-Apart ×15"],
+        work: ["Sprint stairs", "Combo at top (1-2 + additional)", "+ Good Morning ×8 BW (odd runs)", "Walk or jog down", "+ Band Pull-Apart ×10 (even runs)"],
+        finisher: ["Farmer's Walk ×1 min"],
+        cooldown: ["Foam Roller T-Spine ×90 sec", "Wall Slide ×10", "Tempo Squat (3-1-1) ×6"]
+      }
+    ]
+  },
+  {
+    letter: "D", name: "Power + Rotation", patterns: "Plyo/Power, Rotation, Push, Pull, Squat, Core, Mobility", count: "9/11",
+    mvs: "1. Slam Ball Series (30 reps) — 2. Jump Squats (20 reps) — 3. Pull-Ups (3 sets). Fifteen minutes.",
+    workouts: [
+      { num: 15, name: "The Dirty Dozen Pyramid", badge: "primary", type: "Metabolic Grinder", time: "35–50 min", rounds: "12 cumulative rounds", coverage: "11/11", gap: null,
+        warmup: ["Walkout ×5", "Open-Book Rotation ×8/side", "Hip Flexor Stretch ×30 sec/side", "+ Band Pull-Apart ×15", "BW Squat ×10"],
+        work: ["1 TGU", "2 V-Ups", "3 Squat Jumps", "4 Push-Ups", "5 Tuck Jumps", "6 Burpees", "+ Inverted Row ×8 (after rd 6+)", "7 KB Cleans", "8 KB Overhead Press", "9 KB Swings", "10 Shoulder Taps", "11 KB Snatches", "12 Jump Lunges", "+ Band Pull-Apart ×15 (after full rd)"],
+        finisher: ["Farmer's Walk ×1 min"],
+        cooldown: ["Foam Roller T-Spine ×90 sec", "Wall Slide ×10", "Tempo Squat (3-1-1) ×6"]
+      },
+      { num: 17, name: "The Descending Inferno", badge: "primary", type: "Metabolic Grinder", time: "35–45 min", rounds: "4+3+2+1 tiered", coverage: "10/11", gap: "Single-Leg",
+        warmup: ["Walkout ×5", "Open-Book Rotation ×8/side", "Hip Flexor Stretch ×30 sec/side", "+ Band Pull-Apart ×15", "BW Squat ×10"],
+        work: ["T1 (4 rds): KB Cleans ×8/8, KB Swings ×20, +Inverted Row ×10", "T2 (3 rds): Tuck Jumps ×20, KB Press ×10/10, KB Snatches ×5/5, +Band Pull-Apart ×15", "T3 (2 rds): Jump Squats ×20, V-Ups ×50, +Face Pull ×12", "T4 (1 rd): Burpees ×50"],
+        finisher: ["Farmer's Walk ×90 sec"],
+        cooldown: ["Foam Roller T-Spine ×90 sec", "Wall Slide ×10", "Tempo Squat (3-1-1) ×6 — OMIT"]
+      },
+      { num: 5, name: "The Ten-Round Snatch Test", badge: "primary", type: "Metabolic Grinder", time: "35–40 min", rounds: "10 rounds", coverage: "11/11", gap: null,
+        warmup: ["Walkout ×5", "Open-Book Rotation ×8/side", "Hip Flexor Stretch ×30 sec/side", "+ Band Pull-Apart ×15", "BW Squat ×10"],
+        work: ["KB Snatch ×3/3", "Push-Ups ×10", "Jump Lunges ×20", "+ Band Pull-Apart ×10 (even rds)", "+ Hollow Body Hold ×20 sec (rds 4 & 8)"],
+        finisher: ["Farmer's Walk ×90 sec"],
+        cooldown: ["Foam Roller T-Spine ×90 sec", "Wall Slide ×10", "Tempo Squat (3-1-1) ×6 — OMIT"]
+      },
+      { num: 16, name: "The Mountain Climber Gauntlet", badge: "secondary", type: "Metabolic Grinder", time: "25–30 min", rounds: "5 rounds", coverage: "10/11", gap: "Single-Leg",
+        warmup: ["Walkout ×5", "Open-Book Rotation ×8/side", "Hip Flexor Stretch ×30 sec/side", "+ Band Pull-Apart ×15", "BW Squat ×10"],
+        work: ["Push-Ups ×12", "Squat Jumps ×15", "Mountain Climbers ×50", "+ Band Pull-Apart ×12", "+ KB Swing ×10"],
+        finisher: ["Farmer's Walk ×1 min"],
+        cooldown: ["Foam Roller T-Spine ×90 sec", "Wall Slide ×10", "Tempo Squat (3-1-1) ×6 — OMIT if spent"]
+      },
+      { num: 19, name: "The Metabolic Twenty", badge: "secondary", type: "Metabolic Grinder", time: "55–60 min", rounds: "3 rds × 20 exercises", coverage: "11/11", gap: null,
+        warmup: ["Walkout ×5", "Open-Book Rotation ×8/side", "Hip Flexor Stretch ×30 sec/side", "+ Band Pull-Apart ×15", "BW Squat ×10"],
+        work: ["45s work / 15s rest:", "Burpees / Ab Spring-Ups / Plyo Lunges / Push-Ups / High Knees", "MCs / Kick-Ups / Prisoner Squats / Alt Side Planks", "Bunny Hop Sprawls / Oblique In&Outs / Rotational Jump Lunges", "Low Plyo Push-Ups / Tuck Jumps / Supermans / Rotational MCs", "Squat-to-SJ / Hip Thrusts / Alt 1-Arm Burpees", "+ REST 90s — Band Pull-Apart ×20 (Rd 1)", "+ REST 90s — Face Pull ×15 (Rd 2)", "+ Inverted Row ×15 (Rd 3)"],
+        finisher: ["Farmer's Walk ×90 sec"],
+        cooldown: ["Foam Roller T-Spine ×90 sec", "Wall Slide ×10", "Tempo Squat (3-1-1) ×6 — OMIT"]
+      }
+    ]
+  },
+  {
+    letter: "E", name: "Hinge + Pull Volume", patterns: "Hinge, Pull, Squat, Core, Mobility", count: "5/11",
+    mvs: "1. Good Mornings (50 reps) — 2. Inverted Rows (3×10) — 3. Hip Bridge (3×12). Fifteen minutes.",
+    workouts: [
+      { num: 9, name: "Clean, Crunch, Crawl", badge: "primary", type: "KB Skill Circuit", time: "25–30 min", rounds: "4 rounds", coverage: "11/11", gap: null,
+        warmup: ["Walkout ×5", "Open-Book Rotation ×8/side", "Hip Flexor Stretch ×30 sec/side", "+ Band Pull-Apart ×15", "BW Squat ×10"],
+        work: ["Squat Clean ×10", "V-Ups ×12", "Plank Elevators ×8", "+ Jump Lunge ×10 total"],
+        finisher: ["Suitcase Carry ×30 sec/side"],
+        cooldown: ["Foam Roller T-Spine ×90 sec", "Wall Slide ×10", "Tempo Squat (3-1-1) ×6"]
+      },
+      { num: 3, name: "Fifty and Clean", badge: "primary", type: "Metabolic Grinder", time: "25–30 min", rounds: "3 rounds", coverage: "10/11", gap: "Single-Leg",
+        warmup: ["Walkout ×5", "Open-Book Rotation ×8/side", "Hip Flexor Stretch ×30 sec/side", "+ Band Pull-Apart ×15", "BW Squat ×10"],
+        work: ["Push-Ups ×50", "+ Inverted Row ×25", "Clean + Squat ×3/3 (R then L)", "+ Band Pull-Apart ×15"],
+        finisher: ["Farmer's Walk ×90 sec"],
+        cooldown: ["Foam Roller T-Spine ×90 sec", "Wall Slide ×10", "Tempo Squat (3-1-1) ×6"]
+      },
+      { num: 22, name: "The 300 Swing Challenge", badge: "secondary", type: "Metabolic Grinder", time: "35–45 min", rounds: "Descending 16→9", coverage: "10/11", gap: "Single-Leg",
+        warmup: ["Walkout ×5", "Open-Book Rotation ×8/side", "Hip Flexor Stretch ×30 sec/side", "+ Band Pull-Apart ×15", "BW Squat ×10"],
+        work: ["KB Swings × set (desc: 16,16,16,12,12,10,10,9,9...)", "Wall Balls ×20 (every pause)", "+ Band Pull-Apart ×12 OR Plank ×30 sec (every 3rd break)", "Front KB Squats at 53 lbs (between sets)"],
+        finisher: ["Farmer's Walk ×2 min (heaviest)"],
+        cooldown: ["Foam Roller T-Spine ×90 sec", "Wall Slide ×10", "Tempo Squat (3-1-1) ×6"]
+      },
+      { num: 8, name: "TGU Chest Press Complex", badge: "secondary", type: "KB Skill Circuit", time: "30–35 min", rounds: "4 rounds", coverage: "10/11", gap: "Plyo/Power",
+        warmup: ["Walkout ×5", "Open-Book Rotation ×8/side", "Hip Flexor Stretch ×30 sec/side", "+ Band Pull-Apart ×15", "BW Squat ×10"],
+        work: ["TGU with Chest Press ×3/3", "Push-Ups ×8", "+ DB Row ×8/side", "+ Goblet Squat ×8"],
+        finisher: ["Farmer's Walk ×1 min"],
+        cooldown: ["Foam Roller T-Spine ×90 sec", "Wall Slide ×10", "Tempo Squat (3-1-1) ×6"]
+      }
+    ]
+  },
+  {
+    letter: "F", name: "Boxing + Single-Leg", patterns: "Push, Rotation, Locomotion, Single-Leg, Plyo, Core, Mobility", count: "7/11",
+    mvs: "1. Shadow Boxing (3 rounds) — 2. Split Squats (3×8 each) — 3. Wall Slides (10). Twenty minutes.",
+    workouts: [
+      { num: 21, name: "The Tabata War", badge: "primary", type: "Boxing-Hybrid", time: "40–50 min", rounds: "3 tabata rounds", coverage: "11/11", gap: null,
+        warmup: ["Jump Rope ×10 min — 3 Cycles:", "20 Jack Knives", "50 Flutter Kicks", "Shadow Box 2 min", "Plank 1 min", "+ Open-Book Rotation ×8/side"],
+        work: ["RD 1: Freestyle ×20s, 1-2-4-5 ×10s, Jump Squat Tabata, Plank ×1 min, +Face Pull ×15", "RD 2: 1-2-4-5 ×20s, 1-2 Touch ×10s, Jump Lunge Tabata, Plank ×1 min, +KB Swing ×12", "RD 3: 1-1-2 ×20s, 1-2-4-5 Touch ×10s, 2-3-2 ×20s, 1-2-4-5 Touch ×10s, +Band Pull-Apart ×15"],
+        finisher: ["Farmer's Walk ×1 min"],
+        cooldown: ["Foam Roller T-Spine ×90 sec", "Wall Slide ×10", "Tempo Squat (3-1-1) ×6"]
+      },
+      { num: 13, name: "Stairwell Striker", badge: "secondary", type: "Boxing-Hybrid", time: "25–30 min", rounds: "10 stair runs", coverage: "11/11", gap: null,
+        warmup: ["Open-Book Rotation ×6/side", "Hip Flexor Stretch ×20 sec/side", "+ Band Pull-Apart ×15"],
+        work: ["Sprint stairs", "Combo at top (1-2 + additional)", "+ Good Morning ×8 BW (odd runs)", "Walk or jog down", "+ Band Pull-Apart ×10 (even runs)"],
+        finisher: ["Farmer's Walk ×1 min"],
+        cooldown: ["Foam Roller T-Spine ×90 sec", "Wall Slide ×10", "Tempo Squat (3-1-1) ×6"]
+      },
+      { num: 11, name: "The Six-Round Crucible", badge: "secondary", type: "Metabolic Grinder", time: "40–50 min", rounds: "6 rounds", coverage: "11/11", gap: null,
+        warmup: ["Walkout ×5", "Open-Book Rotation ×8/side", "Hip Flexor Stretch ×30 sec/side", "+ Band Pull-Apart ×15", "BW Squat ×10"],
+        work: ["KB Swings ×24", "Squats ×24", "Push-Ups ×24", "+ Band Pull-Apart ×12", "Lunges ×24", "Run 1 Lap", "+ Hollow Body Hold ×20 sec (even rds)"],
+        finisher: ["Farmer's Walk ×1 min"],
+        cooldown: ["Foam Roller T-Spine ×90 sec", "Wall Slide ×10", "Tempo Squat (3-1-1) ×6 — OMIT"]
+      }
+    ]
+  },
+  {
+    letter: "G", name: "Hinge + Eccentric Focus", patterns: "Hinge, Squat, Eccentric, Single-Leg, Mobility, Core", count: "7/11",
+    mvs: "1. KB Swings (50 reps) — 2. Eccentric Step-Downs (3×10 each) — 3. Open-Book Rotation (10 each). Fifteen minutes.",
+    workouts: [
+      { num: 4, name: "The Kneeling Knight", badge: "primary", type: "KB Skill Circuit", time: "30–35 min", rounds: "3 rounds", coverage: "10/11", gap: "Locomotion",
+        warmup: ["Walkout ×5", "Open-Book Rotation ×8/side", "Hip Flexor Stretch ×30 sec/side", "+ Band Pull-Apart ×15", "BW Squat ×10"],
+        work: ["One-Knee KB Shoulder Press ×10", "+ DB Row (kneeling) ×8/side", "Turkish Get-Up ×3", "+ KB Swing ×10"],
+        finisher: ["Overhead Carry ×30 sec/hand"],
+        cooldown: ["Foam Roller T-Spine ×90 sec", "Wall Slide ×10", "Tempo Squat (3-1-1) ×6"]
+      },
+      { num: 2, name: "TGU Press Complex", badge: "primary", type: "KB Skill Circuit", time: "30–35 min", rounds: "4 rounds", coverage: "10/11", gap: "Single-Leg",
+        warmup: ["Walkout ×5", "Open-Book Rotation ×8/side", "Hip Flexor Stretch ×30 sec/side", "+ Band Pull-Apart ×15", "BW Squat ×10"],
+        work: ["Left Elbow Plank ×30 sec", "Left TGU Press ×30 sec", "Plank Elevators ×30 sec", "Right Elbow Plank ×30 sec", "Right TGU Press ×30 sec", "Plank Elevators ×30 sec", "KB Pull-Through + 2 Push-Ups ×1 min", "+ Inverted Row ×8", "+ KB Swing ×10"],
+        finisher: ["Suitcase Carry ×30 sec/hand"],
+        cooldown: ["Foam Roller T-Spine ×90 sec", "Wall Slide ×10", "Tempo Squat (3-1-1) ×6"]
+      },
+      { num: 7, name: "The Isometric Triplet", badge: "secondary", type: "Bodyweight / Mixed", time: "25–30 min", rounds: "4 rounds", coverage: "10/11", gap: "Plyo/Power",
+        warmup: ["Walkout ×5", "Open-Book Rotation ×8/side", "Hip Flexor Stretch ×30 sec/side", "+ Band Pull-Apart ×15", "BW Squat ×10"],
+        work: ["KB Switch Split Lunge ×45 sec", "Wall Sit ×45 sec", "Plank ×45 sec", "+ Push-Up ×10", "+ Inverted Row ×8", "+ Good Morning ×10 BW"],
+        finisher: ["Farmer's Walk ×1 min"],
+        cooldown: ["Foam Roller T-Spine ×90 sec", "Wall Slide ×10", "Tempo Squat (3-1-1) ×6 — OMIT"]
+      }
+    ]
+  },
+  {
+    letter: "H", name: "Carry + Conditioning", patterns: "Carry, Squat, Locomotion, Pull, Core, Plyo, Mobility", count: "7/11",
+    mvs: "1. Farmer's Walk (5 min) — 2. Band Pull-Aparts (50 reps) — 3. Sled Push (3 rounds). Fifteen minutes.",
+    workouts: [
+      { num: 11, name: "The Six-Round Crucible", badge: "primary", type: "Metabolic Grinder", time: "40–50 min", rounds: "6 rounds", coverage: "11/11", gap: null,
+        warmup: ["Walkout ×5", "Open-Book Rotation ×8/side", "Hip Flexor Stretch ×30 sec/side", "+ Band Pull-Apart ×15", "BW Squat ×10"],
+        work: ["KB Swings ×24", "Squats ×24", "Push-Ups ×24", "+ Band Pull-Apart ×12", "Lunges ×24", "Run 1 Lap", "+ Hollow Body Hold ×20 sec (even rds)"],
+        finisher: ["Farmer's Walk ×1 min"],
+        cooldown: ["Foam Roller T-Spine ×90 sec", "Wall Slide ×10", "Tempo Squat (3-1-1) ×6 — OMIT"]
+      },
+      { num: 1, name: "The Goblet Gauntlet", badge: "primary", type: "Metabolic Grinder", time: "25–30 min", rounds: "3–5 rounds", coverage: "9/11", gap: "Push, Single-Leg",
+        warmup: ["Walkout ×5", "Open-Book Rotation ×8/side", "Hip Flexor Stretch ×30 sec/side", "+ Band Pull-Apart ×15", "BW Squat ×10"],
+        work: ["Low Goblet Squat Hold ×30 sec", "Goblet Squat Elevators ×30 sec", "Bear Crawl Plank (alt arms) ×30 sec", "Squat Jump ×30 sec", "Mountain Climbers ×1 min", "+ Band Pull-Apart ×12 (odd rds)", "+ Good Morning ×10 BW (even rds)"],
+        finisher: ["Farmer's Walk ×1 min (heaviest)"],
+        cooldown: ["Foam Roller T-Spine ×90 sec", "Wall Slide ×10", "Tempo Squat (3-1-1) ×6 — OMIT if spent"]
+      },
+      { num: 20, name: "The Farmer's Blueprint", badge: "secondary", type: "KB Skill Circuit", time: "30–35 min", rounds: "2–3 rounds", coverage: "10/11", gap: "Single-Leg",
+        warmup: ["Walkout ×5", "Open-Book Rotation ×8/side", "Hip Flexor Stretch ×30 sec/side", "+ Band Pull-Apart ×15", "BW Squat ×10"],
+        work: ["Goblet Jump Squats ×10", "Med Ball Planks ×30 sec", "KB Snatches ×8/side", "Squats ×20", "Farmer Carry ×2 laps", "Burpees ×10", "Push-Ups ×8", "+ DB Row ×8/side", "Kneeling OH Press ×8/side", "+ Band Pull-Apart ×12"],
+        finisher: ["+ Open-Book Rotation ×8/side"],
+        cooldown: ["Foam Roller T-Spine ×90 sec", "Wall Slide ×10", "Tempo Squat (3-1-1) ×6"]
+      }
+    ]
+  },
+  {
+    letter: "I", name: "Eccentric + Mobility", patterns: "Eccentric, Mobility, Single-Leg, Core", count: "4/11",
+    mvs: "1. Foam Roller T-Spine (3 min) — 2. Eccentric Step-Downs (3×10 each) — 3. Wall Slides (10). Twenty minutes.",
+    workouts: [
+      { num: 18, name: "The Plank Laboratory", badge: "primary", type: "Bodyweight / Mixed", time: "30–35 min", rounds: "3 rounds", coverage: "11/11", gap: null,
+        warmup: ["Walkout ×5", "Open-Book Rotation ×8/side", "Hip Flexor Stretch ×30 sec/side", "+ Band Pull-Apart ×15", "BW Squat ×10"],
+        work: ["Medicine Ball V-Ups ×12", "Elbow Plank Series (C/R/L) ×30 sec ea", "Hand Plank Series (C/R/L) ×30 sec ea", "Plank Elevators (R/L lead) ×30 sec ea", "+ Push-Up ×15", "+ Inverted Row ×12", "+ KB Swing ×15", "+ Goblet Squat ×10", "+ Jump Lunge ×10"],
+        finisher: ["Farmer's Walk ×1 min"],
+        cooldown: ["Foam Roller T-Spine ×90 sec", "Wall Slide ×10", "Tempo Squat (3-1-1) ×6"]
+      }
+    ]
+  },
+  {
+    letter: "J", name: "Recovery / Survival / Flex", patterns: "Mobility, Core, Pull (light), Carry (optional)", count: "3/11",
+    mvs: "1. Open-Book Rotation (10 each) — 2. Wall Slides (10) — 3. Band Pull-Aparts (50). Ten minutes. The absolute floor.",
+    workouts: [
+      { num: 7, name: "The Isometric Triplet", badge: "secondary", type: "Bodyweight / Mixed", time: "25–30 min", rounds: "4 rounds", coverage: "10/11", gap: "Plyo/Power",
+        warmup: ["Walkout ×5", "Open-Book Rotation ×8/side", "Hip Flexor Stretch ×30 sec/side", "+ Band Pull-Apart ×15", "BW Squat ×10"],
+        work: ["KB Switch Split Lunge ×45 sec", "Wall Sit ×45 sec", "Plank ×45 sec", "+ Push-Up ×10", "+ Inverted Row ×8", "+ Good Morning ×10 BW"],
+        finisher: ["Farmer's Walk ×1 min"],
+        cooldown: ["Foam Roller T-Spine ×90 sec", "Wall Slide ×10", "Tempo Squat (3-1-1) ×6 — OMIT"]
+      },
+      { num: 18, name: "The Plank Laboratory", badge: "secondary", type: "Bodyweight / Mixed", time: "30–35 min", rounds: "3 rounds", coverage: "11/11", gap: null,
+        warmup: ["Walkout ×5", "Open-Book Rotation ×8/side", "Hip Flexor Stretch ×30 sec/side", "+ Band Pull-Apart ×15", "BW Squat ×10"],
+        work: ["Medicine Ball V-Ups ×12", "Elbow Plank Series (C/R/L) ×30 sec ea", "Hand Plank Series (C/R/L) ×30 sec ea", "Plank Elevators (R/L lead) ×30 sec ea", "+ Push-Up ×15", "+ Inverted Row ×12", "+ KB Swing ×15", "+ Goblet Squat ×10", "+ Jump Lunge ×10"],
+        finisher: ["Farmer's Walk ×1 min"],
+        cooldown: ["Foam Roller T-Spine ×90 sec", "Wall Slide ×10", "Tempo Squat (3-1-1) ×6"]
+      }
+    ]
+  }
+];
+
+function renderPhase(label, cls, items) {
+  if (!items || items.length === 0) return '';
+  return `<div class="phase">
+    <div class="phase-label ${cls}">${label}</div>
+    ${items.map(item => {
+      const isReforge = item.startsWith('+');
+      return `<div class="phase-item">${isReforge ? '<span class="reforge">' + item + '</span>' : item}</div>`;
+    }).join('')}
+  </div>`;
+}
+
+function renderWorkout(w, dayIdx, wIdx) {
+  const id = `wk-${dayIdx}-${wIdx}`;
+  const gapHTML = w.gap ? `<span class="gap-tag">Gap: ${w.gap}</span>` : '';
+  return `<div class="wk-card" id="${id}">
+    <div class="wk-header" onclick="toggleWk('${id}')">
+      <div class="wk-badge ${w.badge}">${w.badge === 'primary' ? 'PRI' : 'SEC'}</div>
+      <div class="wk-info">
+        <div class="wk-name">#${w.num}. ${w.name}</div>
+        <div class="wk-meta">${w.type} &bull; ${w.time} &bull; ${w.rounds} <span class="coverage-tag">${w.coverage}</span>${gapHTML}</div>
+      </div>
+      <svg class="wk-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+    </div>
+    <div class="wk-body"><div class="wk-inner">
+      ${renderPhase('Warm-Up', 'warmup', w.warmup)}
+      ${renderPhase('Work', 'work', w.work)}
+      ${renderPhase('Finisher', 'finisher', w.finisher)}
+      ${renderPhase('Cool-Down', 'cooldown', w.cooldown)}
+    </div></div>
+  </div>`;
+}
+
+function renderAll() {
+  let html = '';
+  days.forEach((day, di) => {
+    const id = `day-${di}`;
+    html += `<div class="day-type" id="${id}">
+      <div class="dt-header" onclick="toggleDay('${id}')">
+        <div class="dt-letter">${day.letter}</div>
+        <div class="dt-info">
+          <div class="dt-name">${day.name}</div>
+          <div class="dt-patterns">${day.patterns}</div>
+        </div>
+        <div class="dt-count">${day.count}</div>
+        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      </div>
+      <div class="dt-body"><div class="dt-inner">
+        <div class="mvs">
+          <div class="mvs-label">Minimum Viable Session</div>
+          <div class="mvs-content">${day.mvs}</div>
+        </div>
+        ${day.workouts.map((w, wi) => renderWorkout(w, di, wi)).join('')}
+      </div></div>
+    </div>`;
+  });
+  document.getElementById('armoryContent').innerHTML = html;
+}
+
+function toggleDay(id) { document.getElementById(id).classList.toggle('open'); }
+function toggleWk(id) { document.getElementById(id).classList.toggle('open'); }
+function toggleLib(id) { document.getElementById(id).classList.toggle('open'); }
+
+// Date-aware header
+(function() {
+  const start = new Date(2026, 1, 16); // Feb 16, 2026
+  const end = new Date(2026, 11, 31);  // Dec 31, 2026
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+  const msPerDay = 86400000;
+  let dayNum = Math.floor((today - start) / msPerDay) + 1;
+  if (dayNum < 1) dayNum = 1;
+  if (dayNum > 319) dayNum = 319;
+
+  const remaining = 319 - dayNum;
+  const decadNum = Math.ceil(dayNum / 10);
+  const decadDay = ((dayNum - 1) % 10) + 1;
+
+  const daysToEnd = Math.max(0, Math.floor((end - today) / msPerDay));
+
+  const meta = document.getElementById('headerMeta');
+  meta.innerHTML = `
+    <div class="header-chip"><strong>Day ${dayNum}</strong> / 319</div>
+    <div class="header-chip">Decad <strong>${decadNum}</strong> &mdash; Day <strong>${decadDay}</strong> of 10</div>
+    <div class="header-chip"><span class="accent">${remaining}</span> to go</div>
+  `;
+})();
+
+renderAll();
+</script>
+
+</body>
+</html>
